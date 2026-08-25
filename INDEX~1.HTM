@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activá tu marca — CREW CO</title>
+<meta name="description" content="Armá el plan de tu activación de marca eligiendo los servicios que necesitás. CREW CO — eventos, infraestructura y música.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+<style>
+  :root{
+    --bg:#0a0a09;
+    --bg-alt:#131311;
+    --bg-card:#16150f;
+    --fg:#f3f1e9;
+    --fg-muted:#8f8d80;
+    --fg-faint:#5c5a50;
+    --accent:#d4a017;
+    --accent-soft:rgba(212,160,23,.55);
+    --accent-wash:rgba(212,160,23,.09);
+    --line:rgba(243,241,233,.14);
+    --line-strong:rgba(243,241,233,.28);
+    --display:'Space Grotesk',sans-serif;
+    --mono:'Roboto Mono',monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{background:var(--bg); scroll-behavior:auto;}
+
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--mono);
+    font-size:15px;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+
+  /* ---------- grain + scanline overlay ---------- */
+  .grain{
+    position:fixed; inset:0; z-index:50; pointer-events:none;
+    opacity:.05; mix-blend-mode:overlay;
+  }
+  .scanlines{
+    position:fixed; inset:0; z-index:49; pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.025) 0px,
+      rgba(255,255,255,.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity:.5;
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:48; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.55) 120%);
+  }
+
+  /* ---------- layout shell ---------- */
+  .shell{max-width:1180px; margin:0 auto; padding:0 6vw;}
+
+  header.top{
+    position:relative; z-index:5;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:28px 6vw;
+  }
+  .wordmark{
+    font-family:var(--display); font-weight:500; font-size:15px;
+    letter-spacing:3px; text-transform:uppercase;
+  }
+  .back-link{
+    font-family:var(--mono); font-size:12px; letter-spacing:1px;
+    text-transform:uppercase; color:var(--fg-muted); text-decoration:none;
+    border:1px solid var(--line); padding:8px 14px;
+    transition:border-color .25s ease, color .25s ease;
+  }
+  .back-link:hover{border-color:var(--line-strong); color:var(--fg);}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative; z-index:5; padding:8vh 6vw 10vh;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--accent); margin-bottom:28px;
+  }
+  .eyebrow::before{content:'//'; color:var(--accent-soft);}
+  .hero h1{
+    font-family:var(--display); font-weight:500; text-transform:uppercase;
+    font-size:clamp(38px, 7vw, 92px); line-height:.98; letter-spacing:0px;
+    max-width:14ch;
+  }
+  .hero .rule{
+    display:flex; gap:4px; margin:26px 0 26px;
+  }
+  .hero .rule span{display:block; width:64px; height:2px; background:var(--accent-soft);}
+  .hero .rule span:nth-child(2){background:var(--line-strong);}
+  .hero p.lede{
+    max-width:52ch; color:var(--fg-muted); font-size:15.5px; line-height:1.75;
+  }
+  .hero p.lede strong{color:var(--fg); font-weight:500;}
+
+  .hero-meta{
+    display:flex; gap:40px; margin-top:56px; flex-wrap:wrap;
+  }
+  .hero-meta div{border-top:1px solid var(--line); padding-top:10px; min-width:140px;}
+  .hero-meta .k{font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--fg-faint);}
+  .hero-meta .v{font-family:var(--display); font-size:15px; margin-top:6px;}
+
+  /* ---------- section heads ---------- */
+  .section{position:relative; z-index:5; padding:8vh 6vw;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; gap:20px; margin-bottom:44px; flex-wrap:wrap;}
+  .section-head .idx{font-family:var(--mono); color:var(--accent); font-size:12px; letter-spacing:2px;}
+  .section-head h2{
+    font-family:var(--display); font-weight:500; text-transform:uppercase;
+    font-size:clamp(24px, 3.4vw, 38px); letter-spacing:.5px;
+  }
+  .section-head p{color:var(--fg-muted); font-size:13.5px; max-width:36ch;}
+
+  /* ---------- checklist grid ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line);
+  }
+  @media (max-width:900px){ .grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    position:relative; background:var(--bg-card);
+    padding:30px 26px 26px; cursor:pointer; text-align:left;
+    border:none; color:inherit; font-family:inherit;
+    display:flex; flex-direction:column; gap:18px; min-height:230px;
+    transition:background .3s ease;
+  }
+  .card:hover{background:#1b1a13;}
+  .card .top-row{display:flex; align-items:center; justify-content:space-between;}
+  .card .num{font-family:var(--mono); font-size:12px; color:var(--fg-faint); letter-spacing:1px;}
+  .card .box{
+    width:20px; height:20px; border:1px solid var(--line-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:transparent; flex-shrink:0;
+    transition:border-color .25s ease, background .25s ease, color .25s ease;
+  }
+  .card h3{
+    font-family:var(--display); font-weight:500; text-transform:uppercase;
+    font-size:18px; line-height:1.25; letter-spacing:.2px;
+  }
+  .card .tag{color:var(--fg-muted); font-size:13px; line-height:1.6; flex-grow:1;}
+  .card .status{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--fg-faint);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .card.selected{background:var(--accent-wash);}
+  .card.selected .box{background:var(--accent); border-color:var(--accent); color:#0a0a09;}
+  .card.selected h3{color:var(--accent);}
+  .card.selected .status{color:var(--accent);}
+  .card::after{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--accent); transform:scaleY(0); transform-origin:top;
+    transition:transform .3s ease;
+  }
+  .card.selected::after{transform:scaleY(1);}
+
+  .stamp{
+    position:absolute; top:22px; right:22px;
+    font-family:var(--mono); font-size:10px; letter-spacing:2px;
+    color:var(--accent); border:1px solid var(--accent-soft);
+    padding:3px 8px; transform:rotate(-8deg) scale(.7);
+    opacity:0; transition:opacity .2s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none;
+  }
+  .card.selected .stamp{opacity:1; transform:rotate(-8deg) scale(1);}
+
+  /* ---------- reference section (acciones incluidas) ---------- */
+  .ref-list{display:flex; flex-direction:column;}
+  .ref-item{
+    border-top:1px dashed var(--line-strong);
+    padding:26px 0; display:grid; grid-template-columns:70px 1fr 1.3fr; gap:24px;
+    align-items:start;
+  }
+  .ref-item:last-child{border-bottom:1px dashed var(--line-strong);}
+  @media (max-width:760px){
+    .ref-item{grid-template-columns:1fr; gap:10px;}
+  }
+  .ref-item .num{font-family:var(--mono); color:var(--accent); font-size:13px;}
+  .ref-item .name{font-family:var(--display); font-weight:500; text-transform:uppercase; font-size:15.5px;}
+  .ref-item .name .tagline{
+    display:block; font-family:var(--mono); font-weight:400; text-transform:none;
+    color:var(--fg-muted); font-size:12.5px; margin-top:6px; letter-spacing:0;
+  }
+  .ref-item .actions{color:var(--fg-muted); font-size:13px; line-height:1.9;}
+  .ref-item .actions span{
+    display:inline-block; border:1px solid var(--line); padding:3px 10px;
+    margin:0 6px 6px 0; font-size:11.5px; letter-spacing:.5px; color:var(--fg);
+  }
+
+  /* ---------- sticky plan bar ---------- */
+  .planbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:60;
+    background:rgba(10,10,9,.88); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line-strong);
+    transform:translateY(100%); transition:transform .4s cubic-bezier(.4,0,.2,1);
+  }
+  .planbar.visible{transform:translateY(0);}
+  .planbar-inner{
+    max-width:1180px; margin:0 auto; padding:16px 6vw;
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  }
+  .planbar .count{
+    font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--fg-faint); white-space:nowrap;
+  }
+  .planbar .count strong{color:var(--accent); font-size:14px;}
+  .planbar .chips{display:flex; gap:8px; flex-wrap:wrap; flex-grow:1; overflow:hidden;}
+  .planbar .chip{
+    font-family:var(--mono); font-size:11px; letter-spacing:.5px;
+    border:1px solid var(--accent-soft); color:var(--accent);
+    padding:5px 10px; white-space:nowrap;
+  }
+  .planbar .empty-hint{color:var(--fg-faint); font-size:12px; font-style:normal;}
+  .cta{
+    font-family:var(--display); font-weight:500; letter-spacing:1.5px; text-transform:uppercase;
+    font-size:13.5px; background:var(--accent); color:#0a0a09; border:none;
+    padding:15px 26px; cursor:pointer; white-space:nowrap;
+    transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    display:flex; align-items:center; gap:10px;
+  }
+  .cta:hover{transform:translateY(-2px);}
+  .cta[disabled]{
+    background:transparent; color:var(--fg-faint); border:1px solid var(--line);
+    cursor:not-allowed; transform:none;
+  }
+  .cta .arrow{transition:transform .2s ease;}
+  .cta:not([disabled]):hover .arrow{transform:translateX(4px);}
+
+  /* ---------- footer ---------- */
+  footer{
+    position:relative; z-index:5; padding:60px 6vw 140px;
+    border-top:1px solid var(--line); margin-top:40px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+  }
+  footer .fine{color:var(--fg-faint); font-size:11.5px; letter-spacing:.5px;}
+  footer a.wa{color:var(--fg-muted); font-size:12px; text-decoration:none; border-bottom:1px dotted var(--line-strong);}
+  footer a.wa:hover{color:var(--accent); border-color:var(--accent-soft);}
+
+  [data-reveal]{opacity:0; transform:translateY(28px);}
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+
+<svg class="grain" viewBox="0 0 200 200" preserveAspectRatio="none">
+  <filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/></filter>
+  <rect width="100%" height="100%" filter="url(#noise)"/>
+</svg>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<header class="top">
+  <div class="wordmark">Crew Co</div>
+  <a class="back-link" href="https://crewco.site/">‹ Volver al sitio</a>
+</header>
+
+<main class="shell" style="max-width:none; padding:0;">
+
+  <section class="hero">
+    <span class="eyebrow" data-reveal>Checklist de servicios</span>
+    <h1 data-reveal>Armá el plan<br>de tu activación</h1>
+    <div class="rule" data-reveal><span></span><span></span></div>
+    <p class="lede" data-reveal>
+      Elegí los servicios que tu marca necesita para esta activación.
+      Abajo te mostramos <strong>exactamente qué incluye cada uno</strong> —
+      nada de letra chica. Cuando termines, coordinamos una llamada
+      para cerrar el presupuesto a medida.
+    </p>
+    <div class="hero-meta" data-reveal>
+      <div><div class="k">Servicios</div><div class="v">6 grupos</div></div>
+      <div><div class="k">Selección</div><div class="v">A tu medida</div></div>
+      <div><div class="k">Cierre</div><div class="v">Llamada directa</div></div>
+    </div>
+  </section>
+
+  <section class="section" id="checklist">
+    <div class="section-head" data-reveal>
+      <span class="idx">01 — Seleccioná</span>
+      <h2>Qué necesita tu marca</h2>
+      <p>Tocá cada servicio para sumarlo a tu plan. Podés combinar los que quieras.</p>
+    </div>
+
+    <div class="grid" id="cardGrid" role="group" aria-label="Checklist de servicios"></div>
+  </section>
+
+  <section class="section" id="reference">
+    <div class="section-head" data-reveal>
+      <span class="idx">02 — Referencia</span>
+      <h2>Qué incluye cada servicio</h2>
+      <p>El detalle fino de cada plan se termina de ajustar en la llamada, según lo que tu marca ya tenga resuelto.</p>
+    </div>
+    <div class="ref-list" id="refList"></div>
+  </section>
+
+</main>
+
+<footer>
+  <span class="fine">CREW CO — Mendoza, ARG. Eventos, infraestructura y música.</span>
+  <a class="wa" href="https://wa.me/5492616869105" target="_blank" rel="noopener">¿Preferís escribir directo? +54 9 261 686 9105</a>
+</footer>
+
+<div class="planbar" id="planbar">
+  <div class="planbar-inner">
+    <div class="count"><strong id="countNum">0</strong>/6 servicios seleccionados</div>
+    <div class="chips" id="chips"><span class="empty-hint">Elegí al menos un servicio para activar tu plan.</span></div>
+    <button class="cta" id="ctaBtn" disabled>
+      Activar plan <span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<h2 class="sr-only">Checklist interactivo para armar un plan de activación de marca con CREW CO, con envío del resumen por WhatsApp.</h2>
+
+<script>
+const SERVICES = [
+  {
+    id: 'identidad',
+    name: 'Identidad y Diseño de Comunicación',
+    tag: 'Cómo se ve y se cuenta el evento.',
+    actions: ['Diseño de evento', 'Identidad visual', 'Gráficas de imprenta', 'Contenido', 'Registro foto/video', 'Prensa']
+  },
+  {
+    id: 'digital',
+    name: 'Presencia Digital (Landing y Web)',
+    tag: 'Todo lo que tocan antes de llegar.',
+    actions: ['Página web', 'Landing', 'Sistemas', 'Inscripciones y tickets online', 'Email marketing']
+  },
+  {
+    id: 'produccion-general',
+    name: 'Producción General del Evento',
+    tag: 'El armado, de punta a punta.',
+    actions: ['Logística', 'Transportes', 'Cronograma', 'Contratación de personal y proveedores', 'Coordinación general']
+  },
+  {
+    id: 'produccion-tecnica',
+    name: 'Producción Técnica y Artística',
+    tag: 'Lo que pasa arriba y alrededor del escenario.',
+    actions: ['Equipo técnico (sonido, luces, video, escenario, backline)', 'Personal técnico', 'Curaduría de artistas', 'Stage management', 'Hospitality']
+  },
+  {
+    id: 'administracion',
+    name: 'Administración del Evento',
+    tag: 'Lo que sostiene todo por atrás.',
+    actions: ['Presupuestos', 'Cierre financiero', 'Gestión de pagos a proveedores', 'Contratos y papeleo']
+  },
+  {
+    id: 'compliance',
+    name: 'Compliance del Evento',
+    tag: 'Lo que nadie nota, hasta que falta.',
+    actions: ['Seguridad', 'Seguros', 'Permisos estatales', 'Sanidad']
+  }
+];
+
+const WHATSAPP_NUMBER = '5492616869105';
+const selected = new Set();
+
+const cardGrid = document.getElementById('cardGrid');
+const refList = document.getElementById('refList');
+const planbar = document.getElementById('planbar');
+const chipsEl = document.getElementById('chips');
+const countEl = document.getElementById('countNum');
+const ctaBtn = document.getElementById('ctaBtn');
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// build checklist cards
+SERVICES.forEach((s, i) => {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'card';
+  card.setAttribute('aria-pressed', 'false');
+  card.dataset.id = s.id;
+  card.innerHTML = `
+    <span class="stamp">Sumado</span>
+    <div class="top-row">
+      <span class="num">${pad(i+1)}/06</span>
+      <span class="box"></span>
+    </div>
+    <h3>${s.name}</h3>
+    <p class="tag">${s.tag}</p>
+    <span class="status">Tocá para sumar</span>
+  `;
+  card.addEventListener('click', () => toggleService(s.id, card));
+  cardGrid.appendChild(card);
+});
+
+// build reference list
+SERVICES.forEach((s, i) => {
+  const item = document.createElement('div');
+  item.className = 'ref-item';
+  item.setAttribute('data-reveal', '');
+  item.innerHTML = `
+    <span class="num">${pad(i+1)}</span>
+    <div class="name">${s.name}<span class="tagline">${s.tag}</span></div>
+    <div class="actions">${s.actions.map(a => `<span>${a}</span>`).join('')}</div>
+  `;
+  refList.appendChild(item);
+});
+
+function toggleService(id, card){
+  const isSelected = selected.has(id);
+  if (isSelected){
+    selected.delete(id);
+    card.classList.remove('selected');
+    card.setAttribute('aria-pressed', 'false');
+    card.querySelector('.status').textContent = 'Tocá para sumar';
+  } else {
+    selected.add(id);
+    card.classList.add('selected');
+    card.setAttribute('aria-pressed', 'true');
+    card.querySelector('.status').textContent = 'Sumado a tu plan';
+    if (window.gsap){
+      gsap.fromTo(card, {scale:.97}, {scale:1, duration:.35, ease:'back.out(2)'});
+    }
+  }
+  renderPlanbar();
+}
+
+function renderPlanbar(){
+  const count = selected.size;
+  countEl.textContent = count;
+
+  chipsEl.innerHTML = '';
+  if (count === 0){
+    chipsEl.innerHTML = '<span class="empty-hint">Elegí al menos un servicio para activar tu plan.</span>';
+  } else {
+    SERVICES.filter(s => selected.has(s.id)).forEach(s => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = s.name;
+      chipsEl.appendChild(chip);
+      if (window.gsap){
+        gsap.fromTo(chip, {opacity:0, y:6}, {opacity:1, y:0, duration:.3, ease:'power2.out'});
+      }
+    });
+  }
+
+  ctaBtn.disabled = count === 0;
+  planbar.classList.toggle('visible', true);
+}
+
+ctaBtn.addEventListener('click', () => {
+  if (selected.size === 0) return;
+  const names = SERVICES.filter(s => selected.has(s.id)).map(s => s.name);
+  const message = `Hola CrewCo! quiero presupuestar un plan para mi marca con: ${names.join(', ')}.`;
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank', 'noopener');
+});
+
+// show the plan bar once the checklist section is reached
+const observerTarget = document.getElementById('checklist');
+if ('IntersectionObserver' in window){
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) planbar.classList.add('visible');
+    });
+  }, {threshold:.1});
+  io.observe(observerTarget);
+} else {
+  planbar.classList.add('visible');
+}
+
+// smooth scroll (Lenis) — guarded, purely an enhancement
+try {
+  if (window.Lenis){
+    const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+    function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    if (window.gsap && window.gsap.ticker){
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+  }
+} catch(e) { /* smooth scroll is optional */ }
+
+// scroll reveals
+try {
+  if (window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.utils.toArray('[data-reveal]').forEach((el, i) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: .9, ease: 'power3.out',
+        delay: el.closest('.hero') ? i * 0.08 : 0,
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+  } else {
+    document.querySelectorAll('[data-reveal]').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+  }
+} catch(e) {
+  document.querySelectorAll('[data-reveal]').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+}
+</script>
+
+</body>
+</html>
